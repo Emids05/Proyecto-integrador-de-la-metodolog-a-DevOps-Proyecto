@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Inventario - Moda Ágil</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #222;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.container {
+    padding: 20px;
+}
+
+.form-section {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+input, select, button {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+    border: none;
+}
+
+button:hover {
+    background: #5a67d8;
+}
+
+.categorias {
+    margin-bottom: 20px;
+}
+
+.categorias button {
+    background: #444;
+}
+
+.productos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    width: 220px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.card h3 {
+    margin: 0;
+}
+
+.stock-bajo {
+    color: red;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Inventario - Moda Ágil</h1>
+</header>
+
+<div class="container">
+
+<div class="form-section">
+<h2>Agregar Producto</h2>
+<input id="nombre" placeholder="Nombre">
+<input id="talla" placeholder="Talla">
+<input id="color" placeholder="Color">
+<input id="precio" placeholder="Precio" type="number">
+<input id="stock" placeholder="Stock" type="number">
+
+<select id="categoria">
+    <option>Dama</option>
+    <option>Caballero</option>
+    <option>Niños</option>
+    <option>Mixta</option>
+    <option>Deportiva</option>
+    <option>De Marca</option>
+</select>
+
+<button onclick="agregarProducto()">Agregar</button>
+</div>
+
+<div class="categorias">
+<h2>Filtrar por Categoría</h2>
+<button onclick="cargarProductos()">Todos</button>
+<button onclick="filtrar('Dama')">Dama</button>
+<button onclick="filtrar('Caballero')">Caballero</button>
+<button onclick="filtrar('Niños')">Niños</button>
+<button onclick="filtrar('Mixta')">Mixta</button>
+<button onclick="filtrar('Deportiva')">Deportiva</button>
+<button onclick="filtrar('De Marca')">De Marca</button>
+</div>
+
+<div class="productos" id="listaProductos"></div>
+
+</div>
+
+<script>
+async function cargarProductos() {
+    const res = await fetch("http://localhost:3000/productos");
+    const data = await res.json();
+    mostrarProductos(data);
+}
+
+function mostrarProductos(productos) {
+    const lista = document.getElementById("listaProductos");
+    lista.innerHTML = "";
+
+    productos.forEach(p => {
+        lista.innerHTML += `
+            <div class="card">
+                <h3>${p.nombre}</h3>
+                <p><b>Categoría:</b> ${p.categoria}</p>
+                <p>Talla: ${p.talla}</p>
+                <p>Color: ${p.color}</p>
+                <p>Precio: $${p.precio}</p>
+                <p class="${p.stock < 5 ? 'stock-bajo' : ''}">
+                    Stock: ${p.stock}
+                </p>
+                <button onclick="actualizarStock(${p.id}, 1)">+1</button>
+                <button onclick="actualizarStock(${p.id}, -1)">-1</button>
+                <button onclick="eliminarProducto(${p.id})">Eliminar</button>
+            </div>
+        `;
+    });
+}
+
+async function agregarProducto() {
+    const producto = {
+        nombre: nombre.value,
+        talla: talla.value,
+        color: color.value,
+        precio: precio.value,
+        stock: stock.value,
+        categoria: categoria.value
+    };
+
+    await fetch("http://localhost:3000/productos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(producto)
+    });
+
+    cargarProductos();
+}
+
+async function filtrar(cat) {
+    const res = await fetch("http://localhost:3000/productos");
+    const data = await res.json();
+    const filtrados = data.filter(p => p.categoria === cat);
+    mostrarProductos(filtrados);
+}
+
+async function actualizarStock(id, cambio) {
+    await fetch(`http://localhost:3000/productos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cambio })
+    });
+
+    cargarProductos();
+}
+
+async function eliminarProducto(id) {
+    await fetch(`http://localhost:3000/productos/${id}`, {
+        method: "DELETE"
+    });
+
+    cargarProductos();
+}
+
+cargarProductos();
+</script>
+
+</body>
+</html>
