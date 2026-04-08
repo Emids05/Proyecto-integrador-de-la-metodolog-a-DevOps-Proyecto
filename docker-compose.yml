@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "4014:3000"
+    environment:
+      - DB_HOST=host.docker.internal
+    volumes:
+      - .:/app
+    command: nodemon server.js
