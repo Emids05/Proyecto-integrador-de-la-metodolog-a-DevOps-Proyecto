@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - "4014:3000"
+      - "3000:3000"
     environment:
       - DB_HOST=host.docker.internal
     volumes:
