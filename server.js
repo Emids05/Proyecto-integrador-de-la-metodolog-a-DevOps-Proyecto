@@ -9,7 +9,7 @@ app.use(express.json()); //body-parser cambiado a express.json
 
 // Conexión a MySQL
 const db = mysql.createConnection({
-  host: "localhost",
+  host: process.env.DB_HOST || "localhost",
   user: "root",
   password: "EMI",
   database: "inventario_ropa"
